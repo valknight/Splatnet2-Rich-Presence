@@ -13,7 +13,7 @@ except ModuleNotFoundError:
 	exit(1)
 
 # config
-friend_code = "0500-7856-4900" # nintendo switch friend code
+friend_code = "Unset" # nintendo switch friend code
 client_id = '488433036665552897' # client id for discord rich presence
 time_interval = 3 # this is the interval at which your rich presence updates. default is 3 seconds
 timeout_minutes = 30 # time it takes for the bot to declare you not playing splatoon in minutes
