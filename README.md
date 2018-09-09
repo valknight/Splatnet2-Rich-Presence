@@ -20,6 +20,10 @@
 
 # FAQs
 
+## How do I change the friend code?
+
+Open up `discord_rich_presence.py` in your favourite text editor, and change the link underneath `# config` that reads `friend_code = "Unset"` to `friend_code = "xxxx-xxxx-xxxx"` where `"xxxx-xxxx-xxxx"` is your friend code.
+
 ## Why can't you get the game I'm in right now?
 
 Nintendo haven't documented any of their API, seeing as they only expected it to be used for the Nintendo Switch Online app, and only data within this app is avaliable on the API, which right now does not include your current match. If you find a way to get the current match, please tell me!
