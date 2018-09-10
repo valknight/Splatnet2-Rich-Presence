@@ -1,8 +1,7 @@
+import json
 import math
 import os
-import random
 import time
-import json
 from datetime import datetime, timedelta
 
 import pypresence
@@ -29,7 +28,8 @@ def get_minutes_since():
         match_end = int(matches[0]["start_time"] + matches[0][
             "elapsed_time"])  # adds the seconds of the match to the unix time of the match starting
     except KeyError:
-        match_end = int(matches[0]["start_time"] + 180)  # we assume that the match lasted 3 minutes here, as sometimes the API doesn't give us how long the match took
+        match_end = int(matches[0][
+                            "start_time"] + 180)  # we assume that the match lasted 3 minutes here, as sometimes the API doesn't give us how long the match took
     match_end_time = timedelta(0, match_end)
     match_time_diff = datetime.utcnow()
     time_to_last_match = match_time_diff - match_end_time
@@ -37,6 +37,7 @@ def get_minutes_since():
     minutes_since = time_to_last_match.hour * 60 + time_to_last_match.minute + time_to_last_match.second / 60
     print("Last match played {} ago".format(minutes_since))
     return minutes_since
+
 
 if __name__ == "__main__":
     print("Checking for updates...")
@@ -48,7 +49,7 @@ if __name__ == "__main__":
     except pypresence.exceptions.InvalidPipe:
         print("Could not connect to the discord pipe. Please ensure it's running.")
 
-    get_minutes_since() # we run this once to ensure the login flow is complete
+    get_minutes_since()  # we run this once to ensure the login flow is complete
     config_f = open("config.txt", "r")
     config = json.loads(config_f.read())
     config_f.close()
@@ -59,7 +60,7 @@ if __name__ == "__main__":
     except KeyError:
         config['friend_code'] = 'Unset'
         config_f = open("config.txt", "w")
-        config_f.write(json.dumps(config, sort_keys=True, indent=4,))
+        config_f.write(json.dumps(config, sort_keys = True, indent = 4, ))
         config_f.close()
         friend_code = config['friend_code']
 
@@ -70,7 +71,7 @@ if __name__ == "__main__":
             last_match_f = open("last_match.json", "r")
             last_match = json.loads(last_match_f.read())
             last_match_f.close()
-            seconds_since = minutes_since * 60
+            seconds_since = int(minutes_since * 60)  # int is here so we don't have funky floating point madness
             hours_since = int(minutes_since / 60)
             if minutes_since >= 60:
                 details = "Last match: {} hour(s) ago".format(hours_since)
