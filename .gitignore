@@ -1,0 +1,9 @@
+
+.gitignore
+.idea/
+__pycache__/
+config.txt
+dbs.py
+iksm.py
+splatnet2statink.py
+splatnet2statink/
