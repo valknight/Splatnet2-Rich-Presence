@@ -44,6 +44,7 @@ def get_minutes_since():
 if __name__ == "__main__":
     print("Checking for updates...")
     os.system("git pull")
+    print("If updates were done, restart this script by using CTRL-C to terminate it, and re run it.")
     try:
         RPC = Presence(client_id)  # Initialize the Presence class
         RPC.connect()  # Start the handshake loop
