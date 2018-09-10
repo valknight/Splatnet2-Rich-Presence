@@ -15,7 +15,6 @@ except ModuleNotFoundError:
     exit(1)
 
 # config
-friend_code = "Unset"  # nintendo switch friend code
 client_id = '488433036665552897'  # client id for discord rich presence
 time_interval = 3  # this is the interval at which your rich presence updates. default is 3 seconds
 timeout_minutes = 30  # time it takes for the bot to declare you not playing splatoon in minutes
@@ -30,23 +29,14 @@ def get_minutes_since():
         match_end = int(matches[0]["start_time"] + matches[0][
             "elapsed_time"])  # adds the seconds of the match to the unix time of the match starting
     except KeyError:
-        match_end = int(matches[0][
-                            "start_time"] + 180)  # we assume that the match lasted 3 minutes here, as sometimes the API doesn't give us how long the match took
+        match_end = int(matches[0]["start_time"] + 180)  # we assume that the match lasted 3 minutes here, as sometimes the API doesn't give us how long the match took
     match_end_time = timedelta(0, match_end)
-
     match_time_diff = datetime.utcnow()
     time_to_last_match = match_time_diff - match_end_time
     # get minutes since last match
     minutes_since = time_to_last_match.hour * 60 + time_to_last_match.minute + time_to_last_match.second / 60
     print("Last match played {} ago".format(minutes_since))
     return minutes_since
-
-
-quotes = [
-    "Friend code: {}".format(friend_code),
-    "K/D of last match:",
-    "Are you a kid or a squid?{}"
-]  # The quotes to choose from
 
 if __name__ == "__main__":
     print("Checking for updates...")
@@ -58,7 +48,23 @@ if __name__ == "__main__":
     except pypresence.exceptions.InvalidPipe:
         print("Could not connect to the discord pipe. Please ensure it's running.")
 
+    get_minutes_since() # we run this once to ensure the login flow is complete
+    config_f = open("config.txt", "r")
+    config = json.loads(config_f.read())
+    config_f.close()
+
+    # get friend code from config, and add config option if does not exist
+    try:
+        friend_code = config['friend_code']
+    except KeyError:
+        config['friend_code'] = 'Unset'
+        config_f = open("config.txt", "w")
+        config_f.write(json.dumps(config, sort_keys=True, indent=4,))
+        config_f.close()
+        friend_code = config['friend_code']
+
     while True:  # The presence will stay on as long as the program is running
+
         for i in range(0, 4):
             minutes_since = get_minutes_since()
             last_match_f = open("last_match.json", "r")
