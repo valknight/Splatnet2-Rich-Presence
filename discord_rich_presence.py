@@ -79,7 +79,14 @@ if __name__ == "__main__":
                                             last_match["player_result"]["death_count"])
             elif i == 2:
                 details = last_match["my_team_result"]["name"]
-                state = "{}% vs {}%".format(last_match["my_team_percentage"], last_match["other_team_percentage"])
+                try:
+                    state = "{}% vs {}%".format(last_match["my_team_percentage"], last_match["other_team_percentage"])
+                except KeyError:
+                    try:
+                        state = "{} vs {}".format(last_match["my_team_count"], last_match["other_team_count"])
+                    except KeyError:
+                        state = "Gamemode not yet supported"
+
             elif i == 3:
                 state = "{}p".format(last_match["player_result"]["game_paint_point"])
             if minutes_since < timeout_minutes:
