@@ -1,10 +1,12 @@
 
 import math
+import os
 import random
 import time
 import json
 from datetime import datetime, timedelta
 
+import pypresence
 from pypresence import Presence
 try:
 	from splatnet2statink import load_results
@@ -36,8 +38,7 @@ def get_minutes_since():
 	return minutes_since
 
 
-RPC = Presence(client_id)  # Initialize the Presence class
-RPC.connect()  # Start the handshake loop
+
 
 quotes = [
 	"Friend code: {}".format(friend_code),
@@ -46,6 +47,15 @@ quotes = [
 ]  # The quotes to choose from
 
 if __name__ == "__main__":
+	print("Checking for updates...")
+	os.system("git pull")
+
+	try:
+		RPC = Presence(client_id)  # Initialize the Presence class
+		RPC.connect()  # Start the handshake loop
+	except pypresence.exceptions.InvalidPipe:
+		print("Could not connect to the discord pipe. Please ensure it's running.")
+
 	while True:  # The presence will stay on as long as the program is running
 		for i in range(0, 4):
 			minutes_since = get_minutes_since()
