@@ -1,5 +1,3 @@
-
-.gitignore
 .idea/
 __pycache__/
 config.txt
