@@ -35,7 +35,6 @@ def get_minutes_since():
     time_to_last_match = match_time_diff - match_end_time
     # get minutes since last match
     minutes_since = time_to_last_match.hour * 60 + time_to_last_match.minute + time_to_last_match.second / 60
-    print("Last match played {} ago".format(minutes_since))
     return minutes_since
 
 
@@ -97,10 +96,10 @@ if __name__ == "__main__":
             elif i == 3:
                 state = "{}p".format(last_match["player_result"]["game_paint_point"])
             if minutes_since < timeout_minutes:
-                RPC.update(details = details, state = state, large_image = "default",
-                           large_text = "Last match was {}, {}".format(last_match["game_mode"]["name"],
-                                                                       last_match["rule"]["name"]))
-                print("Updated rich presence. Waiting 3 seconds")
+                RPC.update(details = details, state = state, large_image = last_match["rule"]["key"], small_image =
+                "default",
+                           large_text = "Last match was {}, {} on {}".format(last_match["game_mode"]["name"],
+                                                                             last_match["rule"]["name"]))
             else:
                 RPC.clear()
                 print("RPC cleared, not in game long enough")
