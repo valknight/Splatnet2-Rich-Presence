@@ -21,6 +21,9 @@ timeout_minutes = 30  # time it takes for the bot to declare you not playing spl
 
 def get_minutes_since():
     matches = load_results()
+    a = open("matches.json", "w")
+    a.write(json.dumps(matches))
+    a.close()
     last_match = open("last_match.json", "w")
     last_match.write(json.dumps(matches[0]))
     last_match.close()
@@ -41,7 +44,6 @@ def get_minutes_since():
 if __name__ == "__main__":
     print("Checking for updates...")
     os.system("git pull")
-
     try:
         RPC = Presence(client_id)  # Initialize the Presence class
         RPC.connect()  # Start the handshake loop
@@ -49,6 +51,11 @@ if __name__ == "__main__":
         print("Could not connect to the discord pipe. Please ensure it's running.")
 
     get_minutes_since()  # we run this once to ensure the login flow is complete
+    print("\n\nLogged into Splatnet2\n\n")
+    print("IF NO IMAGE LOADS\nI am currently unsure of all the gamemode keys the API returns. \nIf you don't see an "
+          "iamge in discord, "
+          "make an issue on Github, and include the game mode you played, as well your \"last_match.json\" file, "
+          "to assist in debugging. Thanks!")
     config_f = open("config.txt", "r")
     config = json.loads(config_f.read())
     config_f.close()
@@ -99,8 +106,9 @@ if __name__ == "__main__":
                 RPC.update(details = details, state = state, large_image = last_match["rule"]["key"], small_image =
                 "default",
                            large_text = "Last match was {}, {} on {}".format(last_match["game_mode"]["name"],
-                                                                             last_match["rule"]["name"]))
+                                                                             last_match["rule"]["name"], last_match[
+                                                                                 "stage"]["name"]))
             else:
                 RPC.clear()
-                print("RPC cleared, not in game long enough")
+                print("{} : RPC cleared, not in game long enough".format(datetime.now()))
             time.sleep(time_interval)
