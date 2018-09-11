@@ -50,6 +50,7 @@ if __name__ == "__main__":
         RPC.connect()  # Start the handshake loop
     except pypresence.exceptions.InvalidPipe:
         print("Could not connect to the discord pipe. Please ensure it's running.")
+        exit(1)
 
     get_minutes_since()  # we run this once to ensure the login flow is complete
     print("\n\nLogged into Splatnet2\n\n")
