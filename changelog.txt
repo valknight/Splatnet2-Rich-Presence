@@ -1,0 +1,7 @@
+CHANGELOG
+
+v0.1
+
+- First version with this changelog
+- Added friend code to config.txt, instead of the script
+
