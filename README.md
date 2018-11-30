@@ -22,7 +22,7 @@
 
 ## How do I change the friend code?
 
-Open up `discord_rich_presence.py` in your favourite text editor, and change the link underneath `# config` that reads `friend_code = "Unset"` to `friend_code = "xxxx-xxxx-xxxx"` where `"xxxx-xxxx-xxxx"` is your friend code.
+Run the script once, log in, then stop it. Open up `config.txt` and change the friend code parameter to yours!
 
 ## Why can't you get the game I'm in right now?
 

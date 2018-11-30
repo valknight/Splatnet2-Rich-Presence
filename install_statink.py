@@ -32,8 +32,6 @@ if choice.lower() == "y":
             pass
     print("All files copied, cleaning up...")
     rmtree("splatnet2statink", ignore_errors=True)
-
-
 else:
     print("Please install Git then come back here.")
     time.sleep(3)
