@@ -1,0 +1,9 @@
+config.txt
+.vscode/
+.idea/
+__pycache__/
+dbs.py
+iksm.py
+last_match.json
+salmonrun.py
+splatnet2statink.py
