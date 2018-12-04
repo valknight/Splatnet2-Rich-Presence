@@ -23,12 +23,12 @@ show_weapon = True  # change to False to remove weapon name from discord details
 
 def get_minutes_since():
     matches = nso.load_results()
-    a = open("matches.json", "w")
+    with open("matches.json", "w") as a:
     a.write(json.dumps(matches))
-    a.close()
-    last_match = open("last_match.json", "w")
+
+    with open("last_match.json", "w") as last_match:
     last_match.write(json.dumps(matches[0]))
-    last_match.close()
+
     try:
         match_end = int(matches[0]["start_time"] + matches[0][
             "elapsed_time"])  # adds the seconds of the match to the unix time of the match starting
