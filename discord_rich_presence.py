@@ -17,6 +17,7 @@ except ModuleNotFoundError:
 client_id = '488433036665552897'  # client id for discord rich presence
 time_interval = 3  # this is the interval at which your rich presence updates. default is 3 seconds
 timeout_minutes = 30  # time it takes for the bot to declare you not playing splatoon in minutes
+show_weapon = True  # change to False to remove weapon name from discord details
 
 
 def get_minutes_since():
@@ -104,6 +105,10 @@ if __name__ == "__main__":
 
             elif i == 3:
                 state = "{}p".format(last_match["player_result"]["game_paint_point"])
+                if show_weapon:
+                    details = "{}".format(last_match["player_result"]["player"]["weapon"]["name"])
+                else:
+                    pass
             if minutes_since < timeout_minutes:
                 RPC.update(details = details, state = state, large_image = last_match["rule"]["key"], small_image =
                 "default",
