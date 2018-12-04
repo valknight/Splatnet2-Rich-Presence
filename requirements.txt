@@ -1,2 +1,4 @@
 https://github.com/qwertyquerty/pypresence/archive/master.zip
 GitPython
+mitmproxy
+requests
