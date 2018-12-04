@@ -8,6 +8,7 @@ from config.logger import logger
 
 
 def get_config_file():
+    '''Get the data from the config file, and create it if not present'''
     try:
         with open("config/config.txt") as config_f:
             config_data = json.loads(config_f.read())
@@ -27,6 +28,7 @@ def start_credential_proxy():
 
 class NSOInterface:
     def reload_config(self, config_data=None):
+        '''Reload the config, such as after the cookie has changed'''
         if config_data is None:
             config_data = get_config_file()
         self.cookie = config_data['cookie']
@@ -66,6 +68,7 @@ class NSOInterface:
         }
 
     def gen_new_cookie(self, reason):
+        '''Starts proxy to get new cookie from a user'''
         logger.warn(
             "Cookie invalid - reason: {} - loading proxy to regenerate".format(reason))
         logger.info("In order to get a new token, we need to intercept it from the real NSO app. Please make sure you have a smartphone or Android emulator to continue.")
@@ -86,7 +89,6 @@ class NSOInterface:
 
     def load_results(self, calledby=""):
         '''Returns the data we need from the results JSON, if possible.'''
-
         data = self.load_json(False)
         try:
             results = data["results"]  # all we care about
