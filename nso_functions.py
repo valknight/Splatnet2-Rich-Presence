@@ -77,7 +77,8 @@ class NSOInterface:
         '''Returns results JSON from online.'''
 
         if bool:
-            print("Pulling data from online...")  # grab data from SplatNet 2
+            # grab data from SplatNet 2
+            logger.debug("Pulling data from online...")
         url = "https://app.splatoon2.nintendo.net/api/results"
         results_list = requests.get(
             url, headers=self.app_head, cookies=dict(iksm_session=self.cookie))
@@ -85,21 +86,6 @@ class NSOInterface:
 
     def load_results(self, calledby=""):
         '''Returns the data we need from the results JSON, if possible.'''
-
-        # initial checks
-        try:
-            # local file provided (users should not really be using this)
-            if filename != None:
-                if calledby == "monitor":  # hits first
-                    vp = "run in monitoring mode"
-                elif calledby == "populate":  # -r and -M
-                    vp = "check for previously-unuploaded battles"
-                else:
-                    vp = "run"
-                print("Cannot {} given a local file. Exiting.".format(vp))
-                exit(1)
-        except NameError:  # some other script is probably plugging into s2s and calling load_results() directly
-            pass
 
         data = self.load_json(False)
         try:
