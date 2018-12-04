@@ -1,4 +1,4 @@
-config.txt
+config/config.txt
 .vscode/
 .idea/
 __pycache__/
@@ -7,3 +7,4 @@ iksm.py
 last_match.json
 salmonrun.py
 splatnet2statink.py
+venv/
