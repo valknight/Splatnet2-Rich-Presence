@@ -24,10 +24,10 @@ show_weapon = True  # change to False to remove weapon name from discord details
 def get_minutes_since():
     matches = nso.load_results()
     with open("matches.json", "w") as a:
-    a.write(json.dumps(matches))
+        a.write(json.dumps(matches))
 
     with open("last_match.json", "w") as last_match:
-    last_match.write(json.dumps(matches[0]))
+        last_match.write(json.dumps(matches[0]))
 
     try:
         match_end = int(matches[0]["start_time"] + matches[0][
@@ -131,6 +131,5 @@ if __name__ == "__main__":
                                "stage"]["name"]))
             else:
                 RPC.clear()
-                print("{} : RPC cleared, not in game long enough".format(
-                    datetime.now()))
+                logger.debug("RPC cleared, not in game long enough")
             time.sleep(time_interval)
