@@ -9,32 +9,31 @@
 - Python 3.6+
 - Discord
 - Pip
-- Git installed, and on your PATH
+- Android emulator / device running android 6 or below, or an iOS device
+
+(If using iOS, I recommend using ikaWidget2 instead of the official NSO app, as you can pull to refresh to quickly get the cookie)
 
 # Setup
 
 1. Make sure discord is running
-2. Clone the repository. You should find it only has 2 files, and this is normal.
-3. Run install_statink - we do make some installations using pip here, so if pip needs root/admin access for you, run this as such
-4. Run discord_rich_presence.py - the script uses the Splatnet2statink login flow, so you should be up and running in no time!
+2. Clone the repository
+3. Run setup.py - we do make some installations using pip here, so if pip needs root/admin access for you, run this as such
+4. Run discord_rich_presence.py - you should be prompted to how to login once running this, and you should be up and running in no time!
 
 # FAQs
 
 ## How do I change the friend code?
 
-Run the script once, log in, then stop it. Open up `config.txt` and change the friend code parameter to yours!
+Run the script once, log in, then stop it. Open up `config.txt` in the config folder and change the friend code parameter to yours!
 
 ## Why can't you get the game I'm in right now?
 
 Nintendo haven't documented any of their API, seeing as they only expected it to be used for the Nintendo Switch Online app, and only data within this app is avaliable on the API, which right now does not include your current match. If you find a way to get the current match, please tell me!
 
-## Why do you use Splatnet2statink as a requirement?
-
-Splatnet2statink seems to be the only thing I can find which has managed to solve the issue of the "f" Nintendo introduced to many of the APIs, and instead of rewriting the wheel, it's much easier just to use this tried and tested work. Also, the "f" param is highly sensitive, and Splatnet2statink handles it in a way meaning it never touches the disk, and I've gone through the code to make sure it isn't doing anything malicious, and I can't say the same about more sensible libraries that may exist for Splatnet.
 
 # Security
 
-Your session token and cookie are stored on disk in config.txt, to make automatic login easier. To prevent your account being abused, protect this file, and if you are worried about security, consider using a script to delete this when you close out of the rich presence script.
+In order to get your cookie from the official app, we have to use a man-in-the-middle attack in order to take this cookie during natural operation. However, we use mitmproxy as a base, which generates certificates on your machine, meaning installing our certificate won't put your device at risk unless these certificates leak. If you are still paranoid, we can recommend using an Android emulator running Android 6.0 or lower.
 
 # License
 
