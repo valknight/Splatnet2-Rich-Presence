@@ -3,6 +3,7 @@ import math
 import os
 import time
 import pypresence
+import click
 import nso_functions
 
 from pypresence import Presence
@@ -23,12 +24,6 @@ show_weapon = True  # change to False to remove weapon name from discord details
 
 def get_minutes_since():
     matches = nso.load_results()
-    with open("matches.json", "w") as a:
-        a.write(json.dumps(matches))
-
-    with open("last_match.json", "w") as last_match:
-        last_match.write(json.dumps(matches[0]))
-
     try:
         match_end = int(matches[0]["start_time"] + matches[0][
             "elapsed_time"])  # adds the seconds of the match to the unix time of the match starting
@@ -41,10 +36,11 @@ def get_minutes_since():
     # get minutes since last match
     minutes_since = time_to_last_match.hour * 60 + \
         time_to_last_match.minute + time_to_last_match.second / 60
-    return minutes_since
+    return minutes_since, matches[0]
 
 
-if __name__ == "__main__":
+@click.command()
+def main():
     logger.info("Checking for updates...")
     os.system("git pull")
     logger.info(
@@ -67,9 +63,6 @@ if __name__ == "__main__":
 
     config = nso_functions.get_config_file()
 
-    # We run this just to ensure the data collection is A-OK
-    get_minutes_since()
-
     logger.info("Logged into Splatnet2")
 
     # get friend code from config, and add config option if does not exist
@@ -85,10 +78,7 @@ if __name__ == "__main__":
     while True:  # The presence will stay on as long as the program is running
 
         for i in range(0, 4):
-            minutes_since = get_minutes_since()
-            last_match_f = open("last_match.json", "r")
-            last_match = json.loads(last_match_f.read())
-            last_match_f.close()
+            minutes_since, last_match = get_minutes_since()
             # int is here so we don't have funky floating point madness
             seconds_since = int(minutes_since * 60)
             hours_since = int(minutes_since / 60)
@@ -99,37 +89,63 @@ if __name__ == "__main__":
                     math.floor(minutes_since))
             else:
                 details = "Last match: {} second(s) ago".format(seconds_since)
-            if i == 0:
-                state = "Friend code: {}".format(friend_code)
-            elif i == 1:
-                state = "K/D: {}/{}".format(last_match["player_result"]["kill_count"],
-                                            last_match["player_result"]["death_count"])
-            elif i == 2:
-                details = last_match["my_team_result"]["name"]
-                try:
-                    state = "{}% vs {}%".format(
-                        last_match["my_team_percentage"], last_match["other_team_percentage"])
-                except KeyError:
-                    try:
-                        state = "{} vs {}".format(
-                            last_match["my_team_count"], last_match["other_team_count"])
-                    except KeyError:
-                        state = "Gamemode not yet supported"
-
-            elif i == 3:
-                state = "{}p".format(
-                    last_match["player_result"]["game_paint_point"])
-                if show_weapon:
-                    details = "{}".format(
-                        last_match["player_result"]["player"]["weapon"]["name"])
+            # job_result is only present in salmon run JSON
+            if last_match.get('job_result') is not None:
+                gamemode_key = "salmon_run"
+                if last_match['job_result']['is_clear']:
+                    outcome = "losing"
                 else:
-                    pass
+                    outcome = "winning"
+                large_text = "Last match was Salmon Run, {} with {} eggs".format(
+                    outcome, last_match['job_score'])
+                if i == 0:
+                    state = "Grade: {}".format(
+                        (last_match["grade"])["long_name"])
+                elif i == 1:
+                    state = "Friend code: {}".format(friend_code)
+                elif i == 2:
+                    state = "Difficulty: {}".format(
+                        str(last_match["danger_rate"]))
+                elif i == 3:
+                    state = "Played on {}".format(
+                        last_match['schedule']['stage']['name'])
+            else:
+                large_text = "Last match was {}, {} on {}".format(
+                    last_match["game_mode"]["name"], last_match["rule"]["name"], last_match["stage"]["name"])
+                gamemode_key = last_match["rule"]["key"]
+                if i == 0:
+                    state = "Friend code: {}".format(friend_code)
+                elif i == 1:
+                    state = "K/D: {}/{}".format(last_match["player_result"]["kill_count"],
+                                                last_match["player_result"]["death_count"])
+                elif i == 2:
+                    details = last_match["my_team_result"]["name"]
+                    try:
+                        state = "{}% vs {}%".format(
+                            last_match["my_team_percentage"], last_match["other_team_percentage"])
+                    except KeyError:
+                        try:
+                            state = "{} vs {}".format(
+                                last_match["my_team_count"], last_match["other_team_count"])
+                        except KeyError:
+                            state = "Gamemode not yet supported"
+
+                elif i == 3:
+                    state = "{}p".format(
+                        last_match["player_result"]["game_paint_point"])
+                    if show_weapon:
+                        details = "{}".format(
+                            last_match["player_result"]["player"]["weapon"]["name"])
+                    else:
+                        pass
             if minutes_since < timeout_minutes:
-                RPC.update(details=details, state=state, large_image=last_match["rule"]["key"], small_image="default",
-                           large_text="Last match was {}, {} on {}".format(last_match["game_mode"]["name"],
-                                                                           last_match["rule"]["name"], last_match[
-                               "stage"]["name"]))
+                RPC.update(details=details, state=state, large_image=gamemode_key, small_image="default",
+                           large_text=large_text)
             else:
                 RPC.clear()
                 logger.debug("RPC cleared, not in game long enough")
             time.sleep(time_interval)
+
+
+if __name__ == "__main__":
+    main()

@@ -22,8 +22,10 @@ def get_config_file():
 
 
 def start_credential_proxy():
-    os.system(
+    status_code = os.system(
         "mitmdump -s ./config/get_session.py -q --set onboarding_host=setup.ink")
+    if bool(status_code):
+        sys.exit(1)
 
 
 class NSOInterface:
@@ -48,7 +50,7 @@ class NSOInterface:
             app_unique_id = str(config_data["app_unique_id"])
         else:
             # random 19-20 digit token. used for splatnet store
-            app_unique_id = "32449507786579989234"
+            app_unique_id = "46674186337252616651"
 
         if "app_user_agent" in config_data:
             app_user_agent = str(config_data["app_user_agent"])
@@ -76,36 +78,36 @@ class NSOInterface:
             "If your smartphone runs Android 7.0 or higher, you will need to use an Android emulator or an iOS device to continue.")
         start_credential_proxy()
 
-    def load_json(self, bool):
+    def load_json(self, api_method):
         '''Returns results JSON from online.'''
-
-        if bool:
-            # grab data from SplatNet 2
-            logger.debug("Pulling data from online...")
-        url = "https://app.splatoon2.nintendo.net/api/results"
+        url = "https://app.splatoon2.nintendo.net/api/{}".format(api_method)
+        logger.debug("Pulling data from {}".format(url))
         results_list = requests.get(
             url, headers=self.app_head, cookies=dict(iksm_session=self.cookie))
-        return json.loads(results_list.text)
-
-    def load_results(self, calledby=""):
-        '''Returns the data we need from the results JSON, if possible.'''
-        data = self.load_json(False)
+        results_data = json.loads(results_list.text)
         try:
-            results = data["results"]  # all we care about
+            if results_data["code"] == "AUTHENTICATION_ERROR":
+                self.gen_new_cookie("auth")
+                # recursively call ourselves to try again
+                results_data = self.load_json(api_method)
         except KeyError:
-            if self.cookie == "":
-                reason = "blank"
-            elif data["code"] == "AUTHENTICATION_ERROR":
-                reason = "auth"
-            else:
-                reason = "other"  # server error or player hasn't battled before
-            self.gen_new_cookie(reason)
-            data = self.load_json(False)
+            pass
+        return results_data
 
-            # we do this just so that we don't end up using the old, borked up token
-            self.reload_config()
+    def load_results(self, calledby="", salmonrun=True):
+        '''Returns the data we need from the results JSON, if possible.
 
-            # try again with correct tokens; shouldn't get an error now...
-            results = self.load_results()
+        Params:
 
+        salmonrun - Set to false if you don't want to merge in salmonrun data'''
+        data = self.load_json("results")
+        results = data['results']
+        if salmonrun:
+            salmonrun_data = self.load_json("coop_results")
+            for coop_match in salmonrun_data['results']:
+                for x in range(0, len(results)):
+                    pvp_match = results[x]
+                    if pvp_match['start_time'] < coop_match['start_time']:
+                        results.insert(x, coop_match)
+                        break
         return results
