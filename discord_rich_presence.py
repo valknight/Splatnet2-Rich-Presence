@@ -18,7 +18,7 @@ client_id = '488433036665552897'  # client id for discord rich presence
 # this is the interval at which your rich presence updates. default is 3 seconds
 time_interval = 3
 # time it takes for the bot to declare you not playing splatoon in minutes
-timeout_minutes = 30
+timeout_minutes = 300000
 show_weapon = True  # change to False to remove weapon name from discord details
 
 
@@ -63,7 +63,7 @@ def main():
 
     config = nso_functions.get_config_file()
 
-    logger.info("Logged into Splatnet2")
+    logger.info("Check discord!")
 
     # get friend code from config, and add config option if does not exist
     try:
@@ -93,9 +93,9 @@ def main():
             if last_match.get('job_result') is not None:
                 gamemode_key = "salmon_run"
                 if last_match['job_result']['is_clear']:
-                    outcome = "losing"
-                else:
                     outcome = "winning"
+                else:
+                    outcome = "losing"
                 large_text = "Last match was Salmon Run, {} with {} eggs".format(
                     outcome, last_match['job_score'])
                 if i == 0:
