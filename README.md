@@ -40,3 +40,5 @@ In order to get your cookie from the official app, we have to use a man-in-the-m
 This is licensed under the MIT License.
 
 Many thanks to *Splatnet2statink*, for having an open source and readily documented method for logging into Splatnet2! A lot of our code is based off theirs, and it's pretty cool, so check it out!
+
+[![pypresence](https://img.shields.io/badge/using-pypresence-00bb88.svg?style=for-the-badge&logo=discord&logoWidth=20)](https://github.com/qwertyquerty/pypresence)
