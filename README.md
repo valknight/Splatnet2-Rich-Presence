@@ -2,6 +2,7 @@
 
 ### Get's Splatoon game information and does fancy Discord rich presence stuff with it!
 
+![GitHub Stars](https://img.shields.io/github/stars/valerokai/Splatnet2-Rich-Presence.svg?style=for-the-badge)
 ---
 
 # Requirements
