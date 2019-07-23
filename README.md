@@ -21,6 +21,8 @@
 3. Run setup.py - we do make some installations using pip here, so if pip needs root/admin access for you, run this as such
 4. Run discord_rich_presence.py - you should be prompted to how to login once running this, and you should be up and running in no time!
 
+Video Tutorial Coming Soon!
+
 # FAQs
 
 ## How do I change the friend code?
