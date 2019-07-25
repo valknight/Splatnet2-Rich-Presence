@@ -7,10 +7,10 @@
 
 # Requirements
 
-- Python 3.6+
+- Python 3.6.X
 - Discord
-- Pip
-- Android emulator / device running android 6 or below, or an iOS device
+- Pip (included with Python 3.6.X)
+- Android Emulator (Nox) / Device running Android 5 or 6, or an iOS device
 
 (If using iOS, I recommend using ikaWidget2 instead of the official NSO app, as you can pull to refresh to quickly get the cookie)
 
