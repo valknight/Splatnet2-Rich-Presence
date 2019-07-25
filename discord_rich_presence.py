@@ -25,7 +25,7 @@ show_weapon = True  # change to False to remove weapon name from discord details
 def get_minutes_since():
     
     matches = nso.load_results()
-
+   
     # When Previous Match was Salmon Run
     if matches[0].get('job_result') is not None:
         match_end = int(
@@ -40,12 +40,17 @@ def get_minutes_since():
             match_end = int(matches[0][
                 "start_time"] + 180)  # we assume that the match lasted 3 minutes here, as sometimes the API doesn't give us how long the match took
 
-    match_end_time = timedelta(0, match_end)
-    match_time_diff = datetime.utcnow()
-    time_to_last_match = match_time_diff - match_end_time
-    # get minutes since last match
-    minutes_since = time_to_last_match.hour * 60 + \
-        time_to_last_match.minute + time_to_last_match.second / 60
+    # Date + Time Now
+    time_now = datetime.utcnow()
+
+    # Date + Time from last played match/run (Unix Timestamp to DateTime)
+    time_match = datetime.utcfromtimestamp(match_end)
+
+    # Calculate time difference between the two dates
+    time_to_last_match = time_now - time_match
+
+    # Get minutes since last Match/Run
+    minutes_since = time_to_last_match.total_seconds() / 60
     return minutes_since, matches[0]
 
 
@@ -88,9 +93,10 @@ def main():
         for i in range(0, 5):
             minutes_since, last_match = get_minutes_since()
 
-            # int is here so we don't have funky floating point madness
-            seconds_since = int(minutes_since * 60)
-            hours_since = int(minutes_since / 60)
+            # Calculating the secs/hours/days since Last Match/Run
+            seconds_since   = int(minutes_since * 60)
+            hours_since     = int(minutes_since / 60)
+            days_since      = int(minutes_since / 1440)
             
             # When Previous Match was Salmon Run
             # job_result is only present in salmon run JSON
@@ -99,17 +105,23 @@ def main():
                 # Sets Gamemode Key in order to change the Picture
                 gamemode_key = "salmon_run"
 
-                # Decides if last Run is shown in hours, minutes or seconds
-                if minutes_since >= 60:
+                # Decides if last Run is shown in days, hours, minutes or seconds
+                # In Days
+                if minutes_since >= 1440:
+                    details = "Last Run: {} day(s) ago".format(days_since)
+
+                # In Hours
+                elif minutes_since >= 60:
                     details = "Last Run: {} h(s) ago".format(hours_since)
+                
+                # In Minutes
                 elif minutes_since > 1:
-                    details = "Last Run: {} min(s) ago".format(
-                        math.floor(minutes_since)
-                    )
+                    details = "Last Run: {} min(s) ago".format(math.floor(minutes_since))
+                
+                # In Seconds
                 else:
-                    details = "Last Run: {} sec(s) ago".format(
-                        seconds_since
-                    )
+                    details = "Last Run: {} sec(s) ago".format(seconds_since)
+
 
                 # Deciding the Result
                 if last_match['job_result']['is_clear']:
@@ -167,11 +179,11 @@ def main():
 
                 # Result and Total Collected Golden Eggs / Power Eggs
                 elif i == 3:
-                   details = "{}".format(
+                   details = "GoldEgg/PowEgg ({})".format(
                        outcome
                    )
 
-                   state = "{} GoldEggs / {} powEggs".format(
+                   state = "{} / {}".format(
                        goldEgg,
                        powEgg
                    )
@@ -199,14 +211,23 @@ def main():
             # When Previous Match was Turf, Ranked, League or Private
             else:
 
-                # Decides if last Match is shown in hours, minutes or seconds
-                if minutes_since >= 60:
-                    details = "Last match: {} h(s) ago".format(hours_since)
+                # Decides if last Match is shown in days, hours, minutes or seconds
+                # In Days
+                if minutes_since >= 1440:
+                    details = "Last Match: {} day(s) ago".format(hours_since)
+
+                # In Hours
+                elif minutes_since >= 60:
+                    details = "Last Match: {} h(s) ago".format(hours_since)
+
+                # In Minutes
                 elif minutes_since > 1:
-                    details = "Last match: {} min(s) ago".format(
-                        math.floor(minutes_since))
+                    details = "Last Match: {} min(s) ago".format(math.floor(minutes_since))
+
+                # In Seconds
                 else:
-                    details = "Last match: {} sec(s) ago".format(seconds_since)
+                    details = "Last Match: {} sec(s) ago".format(seconds_since)
+
 
                 # When hovering on the Picture
                 large_text = "Last match was {}, {} on {}".format(
@@ -218,21 +239,374 @@ def main():
                 # Gets Gamemode Key in order to change the Picture
                 gamemode_key = last_match["rule"]["key"]
 
-                # IGN and Level
+                # Gets Lobby Key
+                lobby_key = last_match["game_mode"]["key"]
+
+                # IGN and Level (+ Rank)
                 if i == 0:
                     details = "IGN: {}".format(
                         last_match["player_result"]["player"]["nickname"]
                     )
 
+                    # Checks if player has a Level Star
+                    # If player has no Level Star (yet XP)
                     if not last_match["star_rank"]:
-                        state = "Level: {}".format(
-                            last_match["player_result"]["player"]["player_rank"]
-                        )
+
+                        # If last match was in a Regular Lobby (Turf War) or Private Lobby
+                        if lobby_key == "regular" or lobby_key == "private":
+                            state = "Level: {}".format(
+                                last_match["player_result"]["player"]["player_rank"],
+                            )
+
+                        # If last match was in a Ranked Solo Lobby
+                        elif lobby_key == "gachi":
+
+                            # If last match was Splat Zones
+                            if gamemode_key == "splat_zones":
+                                
+                                # If player has S+ Rank
+                                if last_match["udemae"]["name"] == "S+":
+                                    state = "Lvl: {}/R(SZ): {}{}".format(
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["udemae"]["name"],
+                                        last_match["udemae"]["s_plus_number"]
+                                    )
+
+                                # If player has X Rank
+                                elif last_match["udemae"]["name"] == "X":
+
+                                    # Checks if Player has any X Power
+                                    # If Player has no X Power (yet XP)
+                                    if not last_match["x_power"]:
+                                        state = "Lvl: {}/R(SZ): X(TBD)".format(
+                                            last_match["player_result"]["player"]["player_rank"],
+                                        )
+
+                                    # If Player has X Power
+                                    else:
+                                        state = "Lvl: {}/R(SZ): X({})".format(
+                                            last_match["player_result"]["player"]["player_rank"],
+                                            last_match["x_power"]
+                                        )
+
+                                # If player has other Ranks
+                                else:
+                                    state = "Lvl: {}/R(SZ): {}".format(
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["udemae"]["name"]
+                                    )
+
+                            # If last match was Tower Control
+                            elif gamemode_key == "tower_control":
+
+                                # If player has S+ Rank
+                                if last_match["udemae"]["name"] == "S+":
+                                    state = "Lvl: {}/R(TC): {}{}".format(
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["udemae"]["name"],
+                                        last_match["udemae"]["s_plus_number"]
+                                    )
+
+                                # If player has X Rank
+                                elif last_match["udemae"]["name"] == "X":
+
+                                    # Checks if Player has any X Power
+                                    # If Player has no X Power (yet XP)
+                                    if not last_match["x_power"]:
+                                        state = "Lvl: {}/R(TC): X(TBD)".format(
+                                            last_match["player_result"]["player"]["player_rank"],
+                                        )
+
+                                    # If Player has X Power
+                                    else:
+                                        state = "Lvl: {}/R(TC): X({})".format(
+                                            last_match["player_result"]["player"]["player_rank"],
+                                            last_match["x_power"]
+                                        )
+
+                                # If player has other Ranks
+                                else:
+                                    state = "Lvl: {}/R(TC): {}".format(
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["udemae"]["name"]
+                                    )
+
+                            # If last match was Rainmaker
+                            elif gamemode_key == "rainmaker":
+
+                                # If player has S+ Rank
+                                if last_match["udemae"]["name"] == "S+":
+                                    state = "Lvl: {}/R(RM): {}{}".format(
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["udemae"]["name"],
+                                        last_match["udemae"]["s_plus_number"]
+                                    )
+
+                                # If player has X Rank
+                                elif last_match["udemae"]["name"] == "X":
+
+                                    # Checks if Player has any X Power
+                                    # If Player has no X Power (yet XP)
+                                    if not last_match["x_power"]:
+                                        state = "Lvl: {}/R(RM): X(TBD)".format(
+                                            last_match["player_result"]["player"]["player_rank"],
+                                        )
+
+                                    # If Player has X Power
+                                    else:
+                                        state = "Lvl: {}/R(RM): X({})".format(
+                                            last_match["player_result"]["player"]["player_rank"],
+                                            last_match["x_power"]
+                                        )
+
+                                # If player has other Ranks
+                                else:
+                                    state = "Lvl: {}/R(RM): {}".format(
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["udemae"]["name"]
+                                    )
+
+                            # If last match was Clam Blitz
+                            else: 
+
+                                # If player has S+ Rank
+                                if last_match["udemae"]["name"] == "S+":
+                                    state = "Lvl: {}/R(CB): {}{}".format(
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["udemae"]["name"],
+                                        last_match["udemae"]["s_plus_number"]
+                                    )
+
+                                # If player has X Rank
+                                elif last_match["udemae"]["name"] == "X":
+
+                                    # Checks if Player has any X Power
+                                    # If Player has no X Power (yet XP)
+                                    if not last_match["x_power"]:
+                                        state = "Lvl: {}/R(CB): X(TBD)".format(
+                                            last_match["player_result"]["player"]["player_rank"],
+                                        )
+
+                                    # If Player has X Power
+                                    else:
+                                        state = "Lvl: {}/R(CB): X({})".format(
+                                            last_match["player_result"]["player"]["player_rank"],
+                                            last_match["x_power"]
+                                        )
+
+                                # If player has other Ranks
+                                else:
+                                    state = "Lvl: {}/R(CB): {}".format(
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["udemae"]["name"]
+                                    )
+                        
+                        # If last match was in a League Pair/Team Lobby
+                        elif lobby_key == "league_pair" or lobby_key == "league_team":
+
+                            # Checks if Player has League Power
+                            # If Player has no League Power (yet XP)
+                            if not last_match["league_point"]:
+                                state = "Lvl: {}/Power: TBD".format(
+                                    last_match["player_result"]["player"]["player_rank"]
+                                )
+                            
+                            # If Player has League Power
+                            else:
+                               state = "Lvl: {}/Power: {}".format(
+                                   last_match["player_result"]["player"]["player_rank"],
+                                   last_match["league_point"]
+                               )
+
+                    # If player has a Level Star
                     else:
-                        state = "Level: {}☆{}".format(
-                            last_match["player_result"]["player"]["player_rank"],
-                            last_match["player_result"]["player"]["star_rank"]
-                        )
+
+                        # If last match was in a Regular Lobby (Turf War) or Private Lobby
+                        if lobby_key == "regular" or lobby_key == "private":
+                            state = "Level: {}☆{}".format(
+                                last_match["player_result"]["player"]["player_rank"],
+                                last_match["player_result"]["player"]["star_rank"],
+                            )
+
+                        # If last match was in a Ranked Solo Lobby
+                        elif lobby_key == "gachi":
+
+                            # If last match was Splat Zones
+                            if gamemode_key == "splat_zones":
+
+                                # If player has S+ Rank
+                                if last_match["udemae"]["name"] == "S+":
+                                    state = "Lvl: {}☆{}/R(SZ): {}{}".format(
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["player_result"]["player"]["star_rank"],
+                                        last_match["udemae"]["name"],
+                                        last_match["udemae"]["s_plus_number"]
+                                    )
+
+                                # If player has X Rank
+                                elif last_match["udemae"]["name"] == "X":
+
+                                    # Checks if Player has any X Power
+                                    # If Player has no X Power (yet XP)
+                                    if not last_match["x_power"]:
+                                        state = "Lvl: {}☆{}/R(SZ): X(TBD)".format(
+                                            last_match["player_result"]["player"]["player_rank"],
+                                            last_match["player_result"]["player"]["star_rank"],
+                                        )
+
+                                    # If Player has X Power
+                                    else:
+                                        state = "Lvl: {}☆{}/R(SZ): X({})".format(
+                                            last_match["player_result"]["player"]["player_rank"],
+                                            last_match["player_result"]["player"]["star_rank"],
+                                            last_match["x_power"]
+                                        )
+
+                                # If player has other Ranks
+                                else:
+                                    state = "Lvl: {}☆{}/R(SZ): {}".format(
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["player_result"]["player"]["star_rank"],
+                                        last_match["udemae"]["name"]
+                                    )
+
+                            # If last match was Tower Control
+                            elif gamemode_key == "tower_control":
+
+                                # If player has S+ Rank
+                                if last_match["udemae"]["name"] == "S+":
+                                    state = "Lvl: {}☆{}/R(TC): {}{}".format(
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["player_result"]["player"]["star_rank"],
+                                        last_match["udemae"]["name"],
+                                        last_match["udemae"]["s_plus_number"]
+                                    )
+
+                                # If player has X Rank
+                                elif last_match["udemae"]["name"] == "X":
+
+                                    # Checks if Player has any X Power
+                                    # If Player has no X Power (yet XP)
+                                    if not last_match["x_power"]:
+                                        state = "Lvl: {}☆{}/R(TC): X(TBD)".format(
+                                            last_match["player_result"]["player"]["player_rank"],
+                                            last_match["player_result"]["player"]["star_rank"],
+                                        )
+
+                                    # If Player has X Power
+                                    else:
+                                        state = "Lvl: {}☆{}/R(TC): X({})".format(
+                                            last_match["player_result"]["player"]["player_rank"],
+                                            last_match["player_result"]["player"]["star_rank"],
+                                            last_match["x_power"]
+                                        )
+
+                                # If player has other Ranks
+                                else:
+                                    state = "Lvl: {}☆{}/R(TC): {}".format(
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["player_result"]["player"]["star_rank"],
+                                        last_match["udemae"]["name"]
+                                    )
+
+
+                            # If last match was Rainmaker
+                            elif gamemode_key == "rainmaker":
+                                
+                                # If player has S+ Rank
+                                if last_match["udemae"]["name"] == "S+":
+                                    state = "Lvl: {}☆{}/R(RM): {}{}".format(
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["player_result"]["player"]["star_rank"],
+                                        last_match["udemae"]["name"],
+                                        last_match["udemae"]["s_plus_number"]
+                                    )
+
+                                # If player has X Rank
+                                elif last_match["udemae"]["name"] == "X":
+
+                                    # Checks if Player has any X Power
+                                    # If Player has no X Power (yet XP)
+                                    if not last_match["x_power"]:
+                                        state = "Lvl: {}☆{}/R(RM): X(TBD)".format(
+                                            last_match["player_result"]["player"]["player_rank"],
+                                            last_match["player_result"]["player"]["star_rank"],
+                                        )
+
+                                    # If Player has X Power
+                                    else:
+                                        state = "Lvl: {}☆{}/R(RM): X({})".format(
+                                            last_match["player_result"]["player"]["player_rank"],
+                                            last_match["player_result"]["player"]["star_rank"],
+                                            last_match["x_power"]
+                                        )
+
+                                # If player has other Ranks
+                                else:
+                                    state = "Lvl: {}☆{}/R(RM): {}".format(
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["player_result"]["player"]["star_rank"],
+                                        last_match["udemae"]["name"]
+                                    )
+
+                            # If last match was Clam Blitz
+                            elif gamemode_key == "clam_blitz":
+
+                                # If player has S+ Rank
+                                if last_match["udemae"]["name"] == "S+":
+                                    state = "Lvl: {}☆{}/R(CZ): {}{}".format(
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["player_result"]["player"]["star_rank"],
+                                        last_match["udemae"]["name"],
+                                        last_match["udemae"]["s_plus_number"]
+                                    )
+                                
+                                # If player has X Rank
+                                elif last_match["udemae"]["name"] == "X":
+
+                                    # Checks if Player has any X Power
+                                    # If Player has no X Power (yet XP)
+                                    if not last_match["x_power"]:
+                                        state = "Lvl: {}☆{}/R(CZ): X(TBD)".format(
+                                            last_match["player_result"]["player"]["player_rank"],
+                                            last_match["player_result"]["player"]["star_rank"],
+                                        )
+                                        
+                                    # If Player has X Power
+                                    else:
+                                        state = "Lvl: {}☆{}/R(CZ): X({})".format(
+                                            last_match["player_result"]["player"]["player_rank"],
+                                            last_match["player_result"]["player"]["star_rank"],
+                                            last_match["x_power"]
+                                        )
+                                
+                                # If player has other Ranks
+                                else: 
+                                    state = "Lvl: {}☆{}/R(CZ): {}".format(
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["player_result"]["player"]["star_rank"],
+                                        last_match["udemae"]["name"]
+                                    )
+
+                        # If last match was in a League Pair/Team Lobby
+                        elif lobby_key == "league_pair" or lobby_key == "league_team":
+                            
+                            # Checks if Player has League Power
+                            # If Player has no League Power (yet XP)
+                            if not last_match["league_point"]:
+                                state = "Lvl: {}☆{}/Power: TBD".format(
+                                    last_match["player_result"]["player"]["player_rank"],
+                                    last_match["player_result"]["player"]["star_rank"],
+                                )
+
+                            # If Player has League Power
+                            else:
+                               state = "Lvl: {}☆{}/Power: {}".format(
+                                   last_match["player_result"]["player"]["player_rank"],
+                                   last_match["player_result"]["player"]["star_rank"],
+                                   last_match["league_point"]
+                               )
+
 
                 # Friend Code
                 elif i == 1:
