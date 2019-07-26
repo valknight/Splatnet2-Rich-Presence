@@ -7,10 +7,10 @@
 
 # Requirements
 
-- Python 3.6+
+- Python 3.6.X
 - Discord
-- Pip
-- Android emulator / device running android 6 or below, or an iOS device
+- Pip (included with Python 3.6.X)
+- Android Emulator (Nox) / Device running Android 5 or 6, or an iOS device
 
 (If using iOS, I recommend using ikaWidget2 instead of the official NSO app, as you can pull to refresh to quickly get the cookie)
 
@@ -20,6 +20,8 @@
 2. Clone the repository
 3. Run setup.py - we do make some installations using pip here, so if pip needs root/admin access for you, run this as such
 4. Run discord_rich_presence.py - you should be prompted to how to login once running this, and you should be up and running in no time!
+
+Video Tutorial Coming Soon!
 
 # FAQs
 

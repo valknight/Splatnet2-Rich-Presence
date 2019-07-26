@@ -103,11 +103,20 @@ class NSOInterface:
         data = self.load_json("results")
         results = data['results']
         if salmonrun:
+
+            # Assigning salmonrun_data with SR JSON
             salmonrun_data = self.load_json("coop_results")
-            for coop_match in salmonrun_data['results']:
-                for x in range(0, len(results)):
-                    pvp_match = results[x]
-                    if pvp_match['start_time'] < coop_match['start_time']:
-                        results.insert(x, coop_match)
-                        break
+
+            # Assigning coop_match with the most recent played Salmon Run Match
+            coop_match = salmonrun_data['results'][0]
+
+            for x in range(0, len(results)):
+                pvp_match = results[x]
+
+                # Checks if the last played SR match has a higher Unix Value than the last played other Match (Turf, Ranked, League, Private)
+                # If yes, insert the data of the last played Salmon Run Match in the results
+                if pvp_match['start_time'] < coop_match['start_time']:
+                    results.insert(x, coop_match)
+                    break
+            
         return results
