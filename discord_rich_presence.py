@@ -214,7 +214,7 @@ def main():
                 # Decides if last Match is shown in days, hours, minutes or seconds
                 # In Days
                 if minutes_since >= 1440:
-                    details = "Last Match: {} day(s) ago".format(hours_since)
+                    details = "Last Match: {} day(s) ago".format(days_since)
 
                 # In Hours
                 elif minutes_since >= 60:
