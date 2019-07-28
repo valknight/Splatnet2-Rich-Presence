@@ -8,7 +8,7 @@
 # Requirements
 
 - Python 3.6.X
-- Git
+- Git (Needed to auto-update the Cloned Repository when there's a new commit on the Online Repository)
 - Discord
 - Pip (included with Python 3.6.X)
 - **Only for Manually Generating a Cookie:** Android Emulator (Nox) / Device running Android 5 or 6, or an iOS device
