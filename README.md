@@ -1,6 +1,6 @@
 # Splatnet Rich Presence
 
-### Get's Splatoon game information and does fancy Discord rich presence stuff with it!
+### Get's Splatoon 2 Game information and does fancy Discord Rich Presence stuff with it!
 
 ![GitHub Stars](https://img.shields.io/github/stars/valerokai/Splatnet2-Rich-Presence.svg?style=for-the-badge)
 ---
@@ -29,7 +29,7 @@ Video Tutorial Coming Soon!
 
 ## How do I change the method of generating a new Cookie (From auto to manual or vice versa?
 
-Delete the `config.txt` in the config folde, run the script (discord_rich_presence.py) and choose your new desired method.
+Delete the `config.txt` in the config folder, run the script (discord_rich_presence.py) and choose your new desired method.
 
 ## Why can't you get the game I'm in right now?
 
