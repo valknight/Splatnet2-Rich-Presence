@@ -433,8 +433,8 @@ class NSOInterface:
         if manual:
             # Starts proxy to get new cookie from a user
 	        logger.warn("Cookie invalid - reason: {} - loading proxy to regenerate".format(reason))
-	        logger.info("In order to get a new token, we need to intercept it from the real NSO app. Please make sure you have a smartphone or Android emulator to continue.")
-	        logger.info("If your smartphone runs Android 7.0 or higher, you will need to use an Android emulator or an iOS device to continue.")
+	        logger.info("In order to get a new token, we need to intercept it from the real NSO app. Please make sure you have a smartphone or Android Emulator (Nox) to continue.")
+	        logger.info("If your smartphone runs Android 7.0 or higher, you will need to use an Android Emulator (Nox) or an iOS device to continue.")
 	        new_cookie = start_credential_proxy()
 
         # If Manual is still set on False
