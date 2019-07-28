@@ -1,8 +1,9 @@
 import json
 import time
 
+# Writes config file and updates the global variables.
 def write_config(tokens):
-	'''Writes config file and updates the global variables.'''
+	
 
 	config_file = open("config/config.txt", "w")
 	config_file.seek(0)
@@ -24,9 +25,8 @@ def write_config(tokens):
 
 	config_file.close()
 
-
+# Get the data from the config file, and create it if not present
 def get_config_file():
-    '''Get the data from the config file, and create it if not present'''
     try:
         with open("config/config.txt") as config_f:
             config_data = json.loads(config_f.read())

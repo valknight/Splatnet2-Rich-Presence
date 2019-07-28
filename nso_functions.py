@@ -99,7 +99,6 @@ def get_session_token(session_token_code, auth_code_verifier):
 
 # Retrieves Auto-Cookie with session_token and userLang
 def get_cookie(session_token, userLang, ver):
-	'''Returns a new cookie provided the session_token.'''
 
 	global version
 	version = ver
@@ -346,8 +345,9 @@ def start_credential_proxy():
 
 
 class NSOInterface:
+
+	# Reload the config, such as after the cookie has changed
     def reload_config(self, config_data=None):
-        '''Reload the config, such as after the cookie has changed'''
         if config_data is None:
             config_data = config_functions.get_config_file()
         self.cookie = config_data['cookie']
@@ -431,7 +431,7 @@ class NSOInterface:
         
         # If Manual is set to True
         if manual:
-            # '''Starts proxy to get new cookie from a user'''
+            # Starts proxy to get new cookie from a user
 	        logger.warn("Cookie invalid - reason: {} - loading proxy to regenerate".format(reason))
 	        logger.info("In order to get a new token, we need to intercept it from the real NSO app. Please make sure you have a smartphone or Android emulator to continue.")
 	        logger.info("If your smartphone runs Android 7.0 or higher, you will need to use an Android emulator or an iOS device to continue.")
@@ -454,8 +454,8 @@ class NSOInterface:
 
         return config_data["cookie"]
 
+	# Returns results JSON from online.
     def load_json(self, api_method):
-        '''Returns results JSON from online.'''
         url = "https://app.splatoon2.nintendo.net/api/{}".format(api_method)
         logger.debug("Pulling data from {}".format(url))
         results_list = requests.get(
@@ -463,12 +463,12 @@ class NSOInterface:
         results_data = json.loads(results_list.text)
         return results_data
 
+	# Returns the data we need from the results JSON, if possible
     def load_results(self, calledby="", salmonrun=True):
-        '''Returns the data we need from the results JSON, if possible.
-
-        Params:
-
-        salmonrun - Set to false if you don't want to merge in salmonrun data'''
+        '''
+			Params:
+			salmonrun - Set to false if you don't want to merge in salmonrun data
+		'''
         
         data = self.load_json("results")
         config_data = self.reload_config(config_data=None)
