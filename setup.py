@@ -11,26 +11,14 @@ if quiet:
 else:
     quiet = ""
 
-## UPGRADING PIP VERSION (CAUSE PYTHON 3.6.0 CONTAINS A LOWER PIP VERSION)
-logger.info("Upgrading PIP to the latest version...")
-response = os.system('{} -m pip install --upgrade pip {}'.format(sys.executable, quiet))
-
-
-if response != 0:
-    logger.error("Failed to upgrade PIP to the latest version.")
-    sys.exit(1)
-else: 
-    logger.info("PIP has been upgraded successfully!")
-
-## Installing the packages from the requirements textfile
 logger.info("Installing requirements...")
-response2 = os.system(
+response = os.system(
     '{} -m pip install -r requirements.txt {}'.format(sys.executable, quiet))
-if response2 != 0:
+if response != 0:
     logger.error(
         "Failed to instal system wide (we recommend a venv if you're not!")
     logger.info("Attempting to install as a user package")
-    response2 = os.system(
+    response = os.system(
         '{} -m pip install -r requirements.txt {} --user'.format(sys.executable, quiet))
 
 if response == 0:

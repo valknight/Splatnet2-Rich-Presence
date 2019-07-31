@@ -25,8 +25,8 @@ class CookieLogger:
         logger.info(
             "New users: make sure to head to setup.ink in your browser to install certificates so we get your cookie")
 
-        self.session = {"cookie": "", "friend_code": "", "method": "manual",
-                        "session_token": "skip", "user_lang": "en-US"}
+        self.session = {"api_key": "", "cookie": "", "friend_code": "",
+                        "session_token": "skip", "user_lang": ""}
 
     def steal_token(self, flow):
         try:
@@ -36,13 +36,10 @@ class CookieLogger:
                     self.session['cookie']))
             else:
                 logger.info("Got new cookie")
-
-
             with open("config/config.txt", "w") as session_f:
                 session_f.write(json.dumps(self.session, indent=4))
                 if exit_on_success:
                     sys.exit(0)
-
         except KeyError:
             pass
 

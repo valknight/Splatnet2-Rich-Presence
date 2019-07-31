@@ -5,99 +5,22 @@ import time
 import pypresence
 import click
 import nso_functions
-import config_functions
 
 from pypresence import Presence
 from datetime import datetime, timedelta
 from config.logger import logger
 
-#########################
-## GENERAL STUFF ##
-
-# Client ID for Discord Rich Presence
-client_id = '488433036665552897'
-
-# This is the interval at which your Rich Presence updates. Default is 3 seconds
-time_interval = 5
-
-# Time it takes for the bot to declare you not playing Splatoon in minutes
-timeout_minutes = 300000
-
-# Change to False to remove weapon name from discord details
-show_weapon = True
-#########################
-
-# This acts as the core controller which allows us to interface with the Splatnet API
+# this acts as the core controller which allows us to interface with the Splatnet API
 nso = nso_functions.NSOInterface()
 
-# Load our current config
-config = config_functions.get_config_file()
+# config
+client_id = '488433036665552897'  # client id for discord rich presence
+# this is the interval at which your rich presence updates. default is 3 seconds
+time_interval = 3
+# time it takes for the bot to declare you not playing splatoon in minutes
+timeout_minutes = 300000
+show_weapon = True  # change to False to remove weapon name from discord details
 
-#########################
-## METHOD AND TOKENS ##
-YOUR_METHOD   = config["method"] # Auto or Manual
-YOUR_COOKIE   = config["cookie"] # iksm_session
-YOUR_FC       = config["friend_code"]
-
-try: # support for pre-v1.0.0 config.txts
-	SESSION_TOKEN = config["session_token"] # to generate new cookies in the future
-except:
-    SESSION_TOKEN = ""
-    USER_LANG= config["user_lang"] 
-#########################
-
-# Checks if there's any Method Value in the config textfile
-def check_method():
-	
-    if YOUR_METHOD == "auto" or YOUR_METHOD == "manual":
-        return
-
-    else:
-        print("\nMake sure you have fully read the \"Cookie generation\" section of the README (use the link below) before proceeding. After you've read it, enter one of the two options below")
-        print("https://github.com/frozenpandaman/splatnet2statink#cookie-generation\n")
-
-        new_method = ""
-        while new_method.strip() != "auto" and new_method.strip() != "manual":
-            if new_method.strip() == "" and YOUR_METHOD.strip() == "":
-                new_method = input("Enter \"auto\" for Auto-Cookie Generation or enter \"manual\" for Manual Cookie Generation: ")
-            else:
-                print("Invalid Method Value. Please re-enter it below.")
-                new_method = input("Enter \"auto\" for Auto-Cookie Generation or enter \"manual\" for Manual Cookie Generation:  ")
-
-        config["method"] = new_method
-
-        # Checks if new_api_key has "skip" as value. If yes, give config_data["session_token"] the value "skip" as well.
-        # This is if the User wants to setup a Cookie Manually
-        if new_method.strip() == "manual":
-            config["session_token"] = "skip"
-        
-    config_functions.write_config(config)
-    return
-
-# Checks if there's any Friendcode Value in the config textfile
-def check_friendcode():
-
-    if len(YOUR_FC) == 17 and "SW-" in YOUR_FC or YOUR_FC == "skip":
-        return
-
-    else:
-        new_fc = ""
-
-        while len(new_fc.strip()) != 17 and new_fc.strip() != "skip":
-
-            if new_fc.strip() == "" and YOUR_FC.strip() == "":
-                new_fc = input("Enter your Switch FC with \"SW-\" at the start (Ex. \"SW-1234-5678-9012\") or enter \"skip\" to fill no Switch Friend Code in: ")
-            else:
-                print("Invalid Friend Code. Please re-enter it below.")
-                new_fc = input("Enter your Switch FC with \"SW-\" at the start (Ex. \"SW-1234-5678-9012\") or enter \"skip\" to fill no Switch Friend Code in:  ")
-
-        config["friend_code"] = new_fc
-
-        if new_fc.strip() == "skip":
-            config["friend_code"] = "skip"
-
-    config_functions.write_config(config)
-    return
 
 def get_minutes_since():
     
@@ -112,10 +35,10 @@ def get_minutes_since():
     else:
         try:
             match_end = int(matches[0]["start_time"] + matches[0][
-            "elapsed_time"])  # adds the seconds of the match to the unix time of the match starting
+                "elapsed_time"])  # adds the seconds of the match to the unix time of the match starting
         except KeyError:
             match_end = int(matches[0][
-            "start_time"] + 180)  # we assume that the match lasted 3 minutes here, as sometimes the API doesn't give us how long the match took
+                "start_time"] + 180)  # we assume that the match lasted 3 minutes here, as sometimes the API doesn't give us how long the match took
 
     # Date + Time Now
     time_now = datetime.utcnow()
@@ -135,7 +58,8 @@ def get_minutes_since():
 def main():
     logger.info("Checking for updates...")
     os.system("git pull")
-    logger.info("If updates were done, restart this script by using CTRL-C to terminate it, and re run it.")
+    logger.info(
+        "If updates were done, restart this script by using CTRL-C to terminate it, and re run it.")
 
     # Make connection to Discord
     try:
@@ -143,18 +67,16 @@ def main():
         RPC.connect()  # Start the handshake loop
     except pypresence.exceptions.InvalidPipe:
         logger.error(
-        "Could not connect to the discord pipe. Please ensure it's running.")
+            "Could not connect to the discord pipe. Please ensure it's running.")
         exit(1)
     except FileNotFoundError:
         logger.error(
-        "Could not connect to the discord pipe. Please ensure it's running.")
+            "Could not connect to the discord pipe. Please ensure it's running.")
         exit(1)
 
-    # Cookie Generation Method Checker
-    check_method()
-
-    # Friendcode Checker
-    check_friendcode()
+    # Load our current config
+    config = nso_functions.get_config_file()
+    logger.info("Check discord!")
 
     # Get friend code from config, and add config option if does not exist
     try:
@@ -166,7 +88,6 @@ def main():
         config_f.close()
         friend_code = config['friend_code']
 
-   
     while True:  # The presence will stay on as long as the program is running
 
         for i in range(0, 5):
@@ -174,8 +95,8 @@ def main():
 
             # Calculating the secs/hours/days since Last Match/Run
             seconds_since   = int(minutes_since * 60)
-            hours_since= int(minutes_since / 60)
-            days_since = int(minutes_since / 1440)
+            hours_since     = int(minutes_since / 60)
+            days_since      = int(minutes_since / 1440)
             
             # When Previous Match was Salmon Run
             # job_result is only present in salmon run JSON
@@ -245,7 +166,7 @@ def main():
 
                 # Friend code
                 elif i == 1:
-                    if 'skip' in friend_code:
+                    if not friend_code:
                         state = "FC: Not Given"
                     else:
                         state = "FC: {}".format(friend_code)
@@ -258,14 +179,14 @@ def main():
 
                 # Result and Total Collected Golden Eggs / Power Eggs
                 elif i == 3:
-                    details = "GoldEgg/PowEgg ({})".format(
-                        outcome
-                    )
+                   details = "GoldEgg/PowEgg ({})".format(
+                       outcome
+                   )
 
-                    state = "{} / {}".format(
-                        goldEgg,
-                        powEgg
-                    )
+                   state = "{} / {}".format(
+                       goldEgg,
+                       powEgg
+                   )
 
                 # Save / Death Ratio
                 elif i == 4:
@@ -282,11 +203,9 @@ def main():
                         small_image="default",
                         large_text=large_text
                     )
-
                 else:
                     RPC.clear()
                     logger.debug("RPC cleared, not in game long enough")
-                    
                 time.sleep(time_interval)
 
             # When Previous Match was Turf, Ranked, League or Private
@@ -344,7 +263,7 @@ def main():
 
                             # If last match was Splat Zones
                             if gamemode_key == "splat_zones":
-                            
+                                
                                 # If player has S+ Rank
                                 if last_match["udemae"]["name"] == "S+":
                                     state = "Lvl: {}/R(SZ): {}{}".format(
@@ -368,14 +287,14 @@ def main():
                                         state = "Lvl: {}/R(SZ): X({})".format(
                                             last_match["player_result"]["player"]["player_rank"],
                                             last_match["x_power"]
-                                    )
+                                        )
 
                                 # If player has other Ranks
                                 else:
                                     state = "Lvl: {}/R(SZ): {}".format(
-                                    last_match["player_result"]["player"]["player_rank"],
-                                    last_match["udemae"]["name"]
-                                )
+                                        last_match["player_result"]["player"]["player_rank"],
+                                        last_match["udemae"]["name"]
+                                    )
 
                             # If last match was Tower Control
                             elif gamemode_key == "tower_control":
@@ -481,7 +400,7 @@ def main():
                                         last_match["player_result"]["player"]["player_rank"],
                                         last_match["udemae"]["name"]
                                     )
-                                    
+                        
                         # If last match was in a League Pair/Team Lobby
                         elif lobby_key == "league_pair" or lobby_key == "league_team":
 
@@ -491,13 +410,13 @@ def main():
                                 state = "Lvl: {}/Power: TBD".format(
                                     last_match["player_result"]["player"]["player_rank"]
                                 )
-                                
+                            
                             # If Player has League Power
                             else:
-                                state = "Lvl: {}/Power: {}".format(
-                                    last_match["player_result"]["player"]["player_rank"],
-                                    last_match["league_point"]
-                                )
+                               state = "Lvl: {}/Power: {}".format(
+                                   last_match["player_result"]["player"]["player_rank"],
+                                   last_match["league_point"]
+                               )
 
                     # If player has a Level Star
                     else:
@@ -522,7 +441,7 @@ def main():
                                         last_match["player_result"]["player"]["star_rank"],
                                         last_match["udemae"]["name"],
                                         last_match["udemae"]["s_plus_number"]
-                                )
+                                    )
 
                                 # If player has X Rank
                                 elif last_match["udemae"]["name"] == "X":
@@ -549,7 +468,7 @@ def main():
                                         last_match["player_result"]["player"]["player_rank"],
                                         last_match["player_result"]["player"]["star_rank"],
                                         last_match["udemae"]["name"]
-                                )
+                                    )
 
                             # If last match was Tower Control
                             elif gamemode_key == "tower_control":
@@ -566,8 +485,8 @@ def main():
                                 # If player has X Rank
                                 elif last_match["udemae"]["name"] == "X":
 
-                                # Checks if Player has any X Power
-                                # If Player has no X Power (yet XP)
+                                    # Checks if Player has any X Power
+                                    # If Player has no X Power (yet XP)
                                     if not last_match["x_power"]:
                                         state = "Lvl: {}☆{}/R(TC): X(TBD)".format(
                                             last_match["player_result"]["player"]["player_rank"],
@@ -593,7 +512,7 @@ def main():
 
                             # If last match was Rainmaker
                             elif gamemode_key == "rainmaker":
-                            
+                                
                                 # If player has S+ Rank
                                 if last_match["udemae"]["name"] == "S+":
                                     state = "Lvl: {}☆{}/R(RM): {}{}".format(
@@ -652,7 +571,7 @@ def main():
                                             last_match["player_result"]["player"]["player_rank"],
                                             last_match["player_result"]["player"]["star_rank"],
                                         )
-
+                                        
                                     # If Player has X Power
                                     else:
                                         state = "Lvl: {}☆{}/R(CZ): X({})".format(
@@ -667,30 +586,31 @@ def main():
                                         last_match["player_result"]["player"]["player_rank"],
                                         last_match["player_result"]["player"]["star_rank"],
                                         last_match["udemae"]["name"]
-                                )
+                                    )
 
                         # If last match was in a League Pair/Team Lobby
-                            elif lobby_key == "league_pair" or lobby_key == "league_team":
+                        elif lobby_key == "league_pair" or lobby_key == "league_team":
                             
-                                # Checks if Player has League Power
-                                # If Player has no League Power (yet XP)
-                                if not last_match["league_point"]:
-                                    state = "Lvl: {}☆{}/Power: TBD".format(
-                                        last_match["player_result"]["player"]["player_rank"],
-                                        last_match["player_result"]["player"]["star_rank"],
-                                    )
+                            # Checks if Player has League Power
+                            # If Player has no League Power (yet XP)
+                            if not last_match["league_point"]:
+                                state = "Lvl: {}☆{}/Power: TBD".format(
+                                    last_match["player_result"]["player"]["player_rank"],
+                                    last_match["player_result"]["player"]["star_rank"],
+                                )
 
-                                # If Player has League Power
-                                else:
-                                    state = "Lvl: {}☆{}/Power: {}".format(
-                                        last_match["player_result"]["player"]["player_rank"],
-                                        last_match["player_result"]["player"]["star_rank"],
-                                        last_match["league_point"]
-                                    )
+                            # If Player has League Power
+                            else:
+                               state = "Lvl: {}☆{}/Power: {}".format(
+                                   last_match["player_result"]["player"]["player_rank"],
+                                   last_match["player_result"]["player"]["star_rank"],
+                                   last_match["league_point"]
+                               )
+
 
                 # Friend Code
                 elif i == 1:
-                    if 'skip' in friend_code:
+                    if not friend_code:
                         state = "FC: Not Given"
                     else:
                         state = "FC: {}".format(friend_code)
@@ -730,7 +650,7 @@ def main():
                         )
                     else:
                         pass
-                    
+                   
                 if minutes_since < timeout_minutes:
                     RPC.update(
                         details=details,
@@ -738,7 +658,7 @@ def main():
                         large_image=gamemode_key,
                         small_image="default",
                         large_text=large_text
-                )
+                    )
                 else:
                     RPC.clear()
                     logger.debug("RPC cleared, not in game long enough")
