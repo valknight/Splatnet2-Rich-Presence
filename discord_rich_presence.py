@@ -53,6 +53,9 @@ def get_minutes_since():
     minutes_since = time_to_last_match.total_seconds() / 60
     return minutes_since, matches[0]
 
+#Return "s" if there needs to be plural, else it doesn't
+def plural_logic(nbr):
+    return "" if nbr == 1 else "s"
 
 @click.command()
 def main():
@@ -108,19 +111,19 @@ def main():
                 # Decides if last Run is shown in days, hours, minutes or seconds
                 # In Days
                 if minutes_since >= 1440:
-                    details = "Last Run: {} day(s) ago".format(days_since)
+                    details = "Last Run: {} day{} ago".format(days_since, plural_logic(days_since))
 
                 # In Hours
                 elif minutes_since >= 60:
-                    details = "Last Run: {} h(s) ago".format(hours_since)
+                    details = "Last Run: {} h{} ago".format(hours_since, plural_logic(hours_since))
                 
                 # In Minutes
                 elif minutes_since > 1:
-                    details = "Last Run: {} min(s) ago".format(math.floor(minutes_since))
+                    details = "Last Run: {} min{} ago".format(math.floor(minutes_since), plural_logic(math.floor(minutes_since)))
                 
                 # In Seconds
                 else:
-                    details = "Last Run: {} sec(s) ago".format(seconds_since)
+                    details = "Last Run: {} sec{} ago".format(seconds_since, plural_logic(seconds_since))
 
 
                 # Deciding the Result
@@ -214,19 +217,19 @@ def main():
                 # Decides if last Match is shown in days, hours, minutes or seconds
                 # In Days
                 if minutes_since >= 1440:
-                    details = "Last Match: {} day(s) ago".format(days_since)
+                    details = "Last Match: {} day{} ago".format(days_since, plural_logic(days_since))
 
                 # In Hours
                 elif minutes_since >= 60:
-                    details = "Last Match: {} h(s) ago".format(hours_since)
+                    details = "Last Match: {} h{} ago".format(hours_since, plural_logic(hours_since))
 
                 # In Minutes
                 elif minutes_since > 1:
-                    details = "Last Match: {} min(s) ago".format(math.floor(minutes_since))
+                    details = "Last Match: {} min{} ago".format(math.floor(minutes_since), plural_logic(math.floor(minutes_since)))
 
                 # In Seconds
                 else:
-                    details = "Last Match: {} sec(s) ago".format(seconds_since)
+                    details = "Last Match: {} sec{} ago".format(seconds_since, plural_logic(seconds_since))
 
 
                 # When hovering on the Picture
